@@ -4,6 +4,8 @@
 
 #include <windows.h>
 
+#include "BitmapClass.h"
+
 #define MAIN_WINDOW_CLASS_NAME													"Main Bitmap Window Class"
 
 #define MAIN_WINDOW_CLASS_STYLE													CS_DBLCLKS

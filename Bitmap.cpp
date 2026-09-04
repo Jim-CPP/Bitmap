@@ -2,13 +2,54 @@
 
 #include "Bitmap.h"
 
+// Global variables
+Bitmap g_bitmap;
+
+BOOL BitmapUpdateFunction( HDC hdc, LPARAM lParam )
+{
+	BOOL bResult;
+
+	int nRectangleLeft;
+	int nRectangleTop;
+	int nRectangleRight;
+	int nRectangleBottom;
+	HPEN hPen;
+	HBRUSH hBrush;
+
+	// Create pen
+	hPen = CreatePen( PS_SOLID, 0, RGB( 255, 0, 0 ) );
+
+	// Create brush
+	hBrush = CreateSolidBrush( RGB( 0, 255, 0 ) );
+
+	// Select pen into memory
+	SelectObject( hdc, hPen );
+
+	// Select brush into memory
+	SelectObject( hdc, hBrush );
+
+	// Store mouse position
+	nRectangleLeft		= LOWORD( lParam );
+	nRectangleTop		= HIWORD( lParam );
+	nRectangleRight		= ( nRectangleLeft + 100 );
+	nRectangleBottom	= ( nRectangleTop + 100 );
+
+	// Draw rectangle into memory
+	bResult = Rectangle( hdc, nRectangleLeft, nRectangleTop, nRectangleRight, nRectangleBottom );
+
+	// Delete pen
+	DeleteObject( hPen );
+
+	// Delete brush
+	DeleteObject( hBrush );
+
+	return bResult;
+
+} // End of function BitmapUpdateFunction
+
 LRESULT CALLBACK MainWindowProcedure( HWND hWndMain, UINT uMessage, WPARAM wParam, LPARAM lParam )
 {
 	LRESULT lResult = 0;
-
-	// Static variables
-	static HDC s_hdcMemory;
-	static HBITMAP s_hBitmap;
 
 	// Select message
 	switch ( uMessage )
@@ -16,42 +57,19 @@ LRESULT CALLBACK MainWindowProcedure( HWND hWndMain, UINT uMessage, WPARAM wPara
 		case WM_CREATE:
 		{
 			// A create message
-			HBRUSH hBrushOriginal;
-			HBRUSH hBrushBackground;
 			int nScreenWidth;
 			int nScreenHeight;
-			HDC hdcWindow;
 
 			// Store screen size
 			nScreenWidth	= GetSystemMetrics( SM_CXSCREEN );
 			nScreenHeight	= GetSystemMetrics( SM_CYSCREEN );
 
-			// Get window dc
-			hdcWindow = GetDC( hWndMain );
-
-			// Create memory dc
-			s_hdcMemory = CreateCompatibleDC( hdcWindow );
-
 			// Create bitmap
-			s_hBitmap = CreateCompatibleBitmap( hdcWindow, nScreenWidth, nScreenHeight );
+			if( g_bitmap.Create( hWndMain, nScreenWidth, nScreenHeight ) )
+			{
+				// Successfully created bitmap
 
-			// Select bitmap into memory
-			SelectObject( s_hdcMemory, s_hBitmap );
-
-			// Create background brush
-			hBrushBackground = CreateSolidBrush( RGB( 255, 255, 255 ) );
-
-			// save old brush and select new brush
-			hBrushOriginal = ( HBRUSH )SelectObject( s_hdcMemory, hBrushBackground );
-
-			// Paint background
-			PatBlt( s_hdcMemory, 0, 0, nScreenWidth, nScreenHeight, PATCOPY );
-
-			// Select original brush back into memory
-			SelectObject( s_hdcMemory, hBrushOriginal );
-
-			// Release window dc
-			ReleaseDC( hWndMain, hdcWindow );
+			} // End of successfully created bitmap
 
 			// Break out of switch
 			break;
@@ -76,22 +94,9 @@ LRESULT CALLBACK MainWindowProcedure( HWND hWndMain, UINT uMessage, WPARAM wPara
 		case WM_PAINT:
 		{
 			// A paint message
-			PAINTSTRUCT ps;
-			int nPaintWidth;
-			int nPaintHeight;
 
-			// Begin painting
-			HDC hdcWindow = BeginPaint( hWndMain, &ps );
-
-			// Store paint size
-			nPaintWidth		= ( ps.rcPaint.right - ps.rcPaint.left );
-			nPaintHeight	= ( ps.rcPaint.bottom - ps.rcPaint.top );
-
-			// Paint from memory onto window
-			BitBlt( hdcWindow, ps.rcPaint.left, ps.rcPaint.top, nPaintWidth, nPaintHeight, s_hdcMemory, ps.rcPaint.left, ps.rcPaint.top, SRCCOPY );
-
-			// End painting
-			EndPaint( hWndMain, &ps );
+			// Paint bitmap onto windoe
+			g_bitmap.Paint( hWndMain );
 
 			// Break out of switch
 			break;
@@ -100,49 +105,12 @@ LRESULT CALLBACK MainWindowProcedure( HWND hWndMain, UINT uMessage, WPARAM wPara
 		case WM_LBUTTONDOWN:
 		{
 			// A left button down message
-			int nOriginalDc;
-			int nRectangleLeft;
-			int nRectangleTop;
-			int nRectangleRight;
-			int nRectangleBottom;
-			HPEN hPen;
-			HBRUSH hBrush;
 
-			// save the current dc state
-			nOriginalDc = SaveDC( s_hdcMemory );
-
-			// Create pen
-			hPen = CreatePen( PS_SOLID, 0, RGB( 255, 0, 0 ) );
-
-			// Create brush
-			hBrush = CreateSolidBrush( RGB( 0, 255, 0 ) );
-
-			// Select pen into memory
-			SelectObject( s_hdcMemory, hPen );
-
-			// Select brush into memory
-			SelectObject( s_hdcMemory, hBrush );
-
-			// Store mouse position
-			nRectangleLeft		= LOWORD( lParam );
-			nRectangleTop		= HIWORD( lParam );
-			nRectangleRight		= ( nRectangleLeft + 100 );
-			nRectangleBottom	= ( nRectangleTop + 100 );
-
-			// Draw rectangle into memory
-			Rectangle( s_hdcMemory, nRectangleLeft, nRectangleTop, nRectangleRight, nRectangleBottom );
+			// Update bitmap
+			g_bitmap.Update( lParam, &BitmapUpdateFunction );
 
 			// force repaint
 			InvalidateRect( hWndMain, NULL, TRUE);
-
-			// Restore original dc into memory
-			RestoreDC( s_hdcMemory, nOriginalDc );
-
-			// Delete pen
-			DeleteObject( hPen );
-
-			// Delete brush
-			DeleteObject( hBrush );
 
 			// Break out of switch
 			break;
