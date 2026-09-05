@@ -141,6 +141,202 @@ BOOL Bitmap::Paint( HWND hWnd )
 
 } // End of function Bitmap::Paint
 
+BOOL Bitmap::Save( LPCTSTR lpszFileName )
+{
+	BOOL bResult = FALSE;
+
+	LPBITMAPINFO lpBitmapInformation = NULL;
+
+	BITMAP bmp;
+
+	// Convert bitmap handle into a bitmap structure
+	if( GetObject( m_hBitmap, sizeof( BITMAP ), ( LPSTR )&bmp ) )
+	{
+		// Successfully converted bitmap handle into a bitmap structure
+		WORD wBitCount;
+		LPBITMAPINFOHEADER lpBitmapInformationHeader;
+		LPBYTE lpBits;
+
+		// Calculate bit count
+		wBitCount = ( WORD )( bmp.bmPlanes * bmp.bmBitsPixel );
+
+		// Ensure that bit count is valid
+		if( wBitCount == 1 )
+		{
+			// Bit count equals 1
+
+			// Keep bit count at 1
+			wBitCount = 1;
+
+		} // End of bit count equals 1
+		else if( wBitCount <= 4 )
+		{
+			// Bit count is not greater than 4
+
+			// Set bit count to 4
+			wBitCount = 4;
+
+		} // End of bit count is not greater than 4
+		else if( wBitCount <= 8)
+		{
+			// Bit count is not greater than 8
+
+			// Set bit count to 8
+			wBitCount = 8;
+
+		} // End of bit count is not greater than 8
+		else if( wBitCount <= 16)
+		{
+			// Bit count is not greater than 16
+
+			// Set bit count to 16
+			wBitCount = 16;
+
+		} // End of bit count is not greater than 16
+		else if( wBitCount <= 24)
+		{
+			// Bit count is not greater than 24
+
+			// Set bit count to 24
+			wBitCount = 24;
+
+		} // End of bit count is not greater than 24
+		else
+		{
+			// Bit count is greater than 24
+
+			// Set bit count to 32
+			wBitCount = 32;
+
+		} // End of bit count is greater than 24
+
+		// See if an rgb quad structure is required
+		if( wBitCount < 24 )
+		{
+			// Bit count is less than 24, so an rgb quad structure is required
+
+			// Allocate memory for bitmap information structure
+			lpBitmapInformation = ( LPBITMAPINFO )LocalAlloc( LPTR, ( sizeof( BITMAPINFOHEADER ) + ( sizeof(RGBQUAD) * ( 1 << wBitCount ) ) ) );
+
+		} // End of bit count is less than 24, so an rgb quad structure is required
+		else
+		{
+			// Bit count is greater than or equal to 24, so no rgb quad structure is required
+
+			// Allocate memory for bitmap information structure
+			lpBitmapInformation = ( LPBITMAPINFO )LocalAlloc( LPTR, sizeof( BITMAPINFOHEADER ) );
+
+		} // End of bit count is greater than or equal to 24, so no rgb quad structure is required
+
+		// Clear bitmap information structure
+		ZeroMemory( lpBitmapInformation, sizeof( *lpBitmapInformation ) );
+
+		// Initialise bitmap information structure
+		lpBitmapInformation->bmiHeader.biSize			= sizeof( BITMAPINFOHEADER );
+		lpBitmapInformation->bmiHeader.biWidth			= bmp.bmWidth;
+		lpBitmapInformation->bmiHeader.biHeight			= bmp.bmHeight;
+		lpBitmapInformation->bmiHeader.biPlanes			= bmp.bmPlanes;
+		lpBitmapInformation->bmiHeader.biBitCount		= bmp.bmBitsPixel;
+		lpBitmapInformation->bmiHeader.biCompression	= BI_RGB;
+		lpBitmapInformation->bmiHeader.biSizeImage		= ( ( ( ( lpBitmapInformation->bmiHeader.biWidth * wBitCount +31 ) & ~31 ) / 8 ) * lpBitmapInformation->bmiHeader.biHeight );
+		lpBitmapInformation->bmiHeader.biClrImportant	= 0;
+
+		// See if number of colors used is relevant
+		if( wBitCount < 24 )
+		{
+			// Bit count is greater than 24, so number of colors used is relevant
+
+			// Calculate number of colors used
+			lpBitmapInformation->bmiHeader.biClrUsed = ( 1 << wBitCount );
+
+		} // End of bit count is greater than 24, so number of colors used is relevant
+
+		// Get pointer to bitmap information header
+		lpBitmapInformationHeader = ( LPBITMAPINFOHEADER )lpBitmapInformation;
+
+		// Allocate bit mempry
+		lpBits = ( LPBYTE )GlobalAlloc( GMEM_FIXED, lpBitmapInformationHeader->biSizeImage );
+
+		// Ensure that bit memory was allocated
+		if( lpBits )
+		{
+			// Successfully allocated bit memory
+
+			// Get bit data
+			if( GetDIBits( m_hdcMemory, m_hBitmap, 0, ( WORD )( lpBitmapInformationHeader->biHeight ), lpBits, lpBitmapInformation, DIB_RGB_COLORS ) )
+			{
+				// Successfully got bit data
+				HANDLE hFile;
+
+				// Create file
+				hFile = CreateFile( lpszFileName, ( GENERIC_READ | GENERIC_WRITE ), ( DWORD ) 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, ( HANDLE )NULL );
+
+				// Ensure that file was created
+				if( hFile != INVALID_HANDLE_VALUE )
+				{
+					// Successfully created file
+					BITMAPFILEHEADER bitmapFileHeader;
+					DWORD dwBitmapFileHeaderOffsetBits;
+					DWORD dwBitmapFileHeaderSize;
+
+					// Calculate offset bits
+					dwBitmapFileHeaderOffsetBits = ( sizeof( BITMAPFILEHEADER ) + lpBitmapInformationHeader->biSize + ( lpBitmapInformationHeader->biClrUsed * sizeof ( RGBQUAD ) ) );
+
+					// Calculate bitmap file header size
+					dwBitmapFileHeaderSize = ( dwBitmapFileHeaderOffsetBits + lpBitmapInformationHeader->biSizeImage );
+
+					// Clear bitmap file header
+					ZeroMemory( &bitmapFileHeader, sizeof( bitmapFileHeader ) );
+
+					// Initialise bitmap file header
+					bitmapFileHeader.bfType			= 0x4d42;
+					bitmapFileHeader.bfSize			= dwBitmapFileHeaderSize;
+					bitmapFileHeader.bfReserved1	= 0;
+					bitmapFileHeader.bfReserved2	= 0;
+					bitmapFileHeader.bfOffBits		= dwBitmapFileHeaderOffsetBits;
+
+					// Write bitmap file header to file
+					if( WriteFile( hFile, ( LPVOID )&bitmapFileHeader, sizeof( BITMAPFILEHEADER ), NULL,  NULL ) )
+					{
+						// Successfully wrote bitmap file header to file
+
+						// Write bitmap information header and rgb quad array to file
+						if( WriteFile( hFile, ( LPVOID )lpBitmapInformationHeader, sizeof( BITMAPINFOHEADER )+ lpBitmapInformationHeader->biClrUsed * sizeof (RGBQUAD), NULL, NULL ) )
+						{
+							// Successfully wrote bitmap information header and rgb quad array to file
+
+							// Write bit data to file
+							if( WriteFile( hFile, ( LPSTR )lpBits, ( int )lpBitmapInformationHeader->biSizeImage, NULL, NULL ) )
+							{
+								// Successfully wrote bit data to file
+
+								// Update return value
+								bResult = TRUE;
+
+							} // End of successfully wrote bit data to file
+
+						} // End of successfully wrote bitmap information header and rgb quad array to file
+
+					} // End of successfully wrote bitmap file header to file
+
+					// Close file
+					CloseHandle( hFile );
+
+				} // End of successfully created file
+
+			} // End of successfully got bit data
+
+			// Free bit memory
+			GlobalFree( ( HGLOBAL )lpBits );
+
+		} // End of successfully allocated bit memory
+
+	} // End of successfully converted bitmap handle into a bitmap structure
+
+	return bResult;
+
+} // End of function Bitmap::Save
+
 BOOL Bitmap::Update( LPARAM lParam, BOOL( *lpUpdateFunction )( HDC hdc, LPARAM lParam ) )
 {
 	BOOL bResult;

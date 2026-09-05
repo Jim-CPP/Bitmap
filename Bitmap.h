@@ -23,3 +23,4 @@
 #define MAIN_WINDOW_MINIMUM_WIDTH												320
 #define MAIN_WINDOW_MINIMUM_HEIGHT												200
 
+#define SAVE_FILE_NAME															"Bitmap.bmp"

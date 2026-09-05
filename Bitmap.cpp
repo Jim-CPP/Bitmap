@@ -127,6 +127,20 @@ LRESULT CALLBACK MainWindowProcedure( HWND hWndMain, UINT uMessage, WPARAM wPara
 			break;
 
 		} // End of a destroy message
+		case WM_CLOSE:
+		{
+			// A close message
+
+			// Save bitmap
+			g_bitmap.Save( SAVE_FILE_NAME );
+
+			// Destroy main window
+			DestroyWindow( hWndMain );
+
+			// Break out of switch
+			break;
+
+		} // End of a close message
 		default:
 		{
 			// Default message

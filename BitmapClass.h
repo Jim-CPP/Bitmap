@@ -26,6 +26,8 @@ public:
 
 	BOOL Paint( HWND hWnd );
 
+	BOOL Save( LPCTSTR lpszFileName );
+
 	BOOL Update( LPARAM lParam, BOOL( *lpUpdateFunction )( HDC hdc, LPARAM lParam ) );
 
 protected:
