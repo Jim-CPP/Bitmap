@@ -23,4 +23,8 @@
 #define MAIN_WINDOW_MINIMUM_WIDTH												320
 #define MAIN_WINDOW_MINIMUM_HEIGHT												200
 
+#define LOAD_FILE_NAME															"House.jpg"
 #define SAVE_FILE_NAME															"Bitmap.bmp"
+
+#define DEFAULT_WIDTH															640
+#define DEFAULT_HEIGHT															480

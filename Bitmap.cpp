@@ -57,19 +57,16 @@ LRESULT CALLBACK MainWindowProcedure( HWND hWndMain, UINT uMessage, WPARAM wPara
 		case WM_CREATE:
 		{
 			// A create message
-			int nScreenWidth;
-			int nScreenHeight;
 
-			// Store screen size
-			nScreenWidth	= GetSystemMetrics( SM_CXSCREEN );
-			nScreenHeight	= GetSystemMetrics( SM_CYSCREEN );
-
-			// Create bitmap
-			if( g_bitmap.Create( hWndMain, nScreenWidth, nScreenHeight ) )
+			// Load bitmap
+			if( !( g_bitmap.Load( hWndMain, "House.jpg" ) ) )
 			{
-				// Successfully created bitmap
+				// Unable to load bitmap
 
-			} // End of successfully created bitmap
+				// Create bitmap
+				g_bitmap.Create( hWndMain, DEFAULT_WIDTH, DEFAULT_HEIGHT );
+
+			} // End of unable to load bitmap
 
 			// Break out of switch
 			break;

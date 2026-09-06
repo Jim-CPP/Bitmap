@@ -3,6 +3,8 @@
 #pragma once
 
 #include <windows.h>
+#include <ocidl.h>
+#include <olectl.h>
 
 #define BITMAP_DEFAULT_BACKGROUND_RED											0xFF
 #define BITMAP_DEFAULT_BACKGROUND_GREEN											0xFF
@@ -23,6 +25,8 @@ public:
 	operator HBITMAP();
 
 	BOOL Create( HWND hWnd, int nWidth, int nHeight, BYTE bRed = BITMAP_DEFAULT_BACKGROUND_RED, BYTE bGreen = BITMAP_DEFAULT_BACKGROUND_GREEN, BYTE bBlue = BITMAP_DEFAULT_BACKGROUND_BLUE );
+
+	BOOL Load( HWND hWnd, LPCTSTR lpszFileName );
 
 	BOOL Paint( HWND hWnd );
 
