@@ -26,6 +26,10 @@ public:
 
 	BOOL Create( HWND hWnd, int nWidth, int nHeight, BYTE bRed = BITMAP_DEFAULT_BACKGROUND_RED, BYTE bGreen = BITMAP_DEFAULT_BACKGROUND_GREEN, BYTE bBlue = BITMAP_DEFAULT_BACKGROUND_BLUE );
 
+	int GetHeight();
+
+	int GetWidth();
+
 	BOOL Load( HWND hWnd, LPCTSTR lpszFileName );
 
 	BOOL Paint( HWND hWnd );
@@ -37,5 +41,7 @@ public:
 protected:
 	HBITMAP m_hBitmap;
 	HDC m_hdcMemory;
+	int m_nWidth;
+	int m_nHeight;
 
 }; // End of class Bitmap

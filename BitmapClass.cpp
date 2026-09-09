@@ -7,6 +7,10 @@ Bitmap::Bitmap()
 	// Initialise member variables
 	ZeroMemory( &m_hBitmap, sizeof( m_hBitmap ) );
 
+	// Clear width and height
+	m_nWidth	= 0;
+	m_nHeight	= 0;
+
 } // End of function Bitmap::Bitmap
 
 Bitmap::~Bitmap()
@@ -107,6 +111,10 @@ BOOL Bitmap::Create( HWND hWnd, int nWidth, int nHeight, BYTE bRed, BYTE bGreen,
 		// Release window dc
 		ReleaseDC( hWnd, hdcWindow );
 
+		// Update member variables
+		m_nWidth	= nWidth;
+		m_nHeight	= nHeight;
+
 		// Update return value
 		bResult = TRUE;
 
@@ -115,6 +123,20 @@ BOOL Bitmap::Create( HWND hWnd, int nWidth, int nHeight, BYTE bRed, BYTE bGreen,
 	return bResult;
 
 } // End of function Bitmap::Create
+
+int Bitmap::GetHeight()
+{
+	// Get height
+	return m_nHeight;
+
+} // End of function Bitmap::GetHeight
+
+int Bitmap::GetWidth()
+{
+	// Get width
+	return m_nWidth;
+
+} // End of function Bitmap::GetWidth
 
 BOOL Bitmap::Load( HWND hWnd, LPCTSTR lpszFileName )
 {
@@ -190,6 +212,7 @@ BOOL Bitmap::Load( HWND hWnd, LPCTSTR lpszFileName )
 							{
 								// Bitmap is valid
 								HDC hdcWindow;
+								BITMAP bitmap;
 
 								// Get window dc
 								hdcWindow = GetDC( hWnd );
@@ -199,6 +222,13 @@ BOOL Bitmap::Load( HWND hWnd, LPCTSTR lpszFileName )
 
 								// Select bitmap into memory
 								SelectObject( m_hdcMemory, m_hBitmap );
+
+								// Copy bitmap handle into a bitmap structure
+								GetObject( m_hBitmap, sizeof( bitmap ), &bitmap );
+
+								// Update member variables
+								m_nWidth	= bitmap.bmWidth;
+								m_nHeight	= bitmap.bmHeight;
 
 								// Update return value
 								bResult = TRUE;
