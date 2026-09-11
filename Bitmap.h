@@ -26,5 +26,7 @@
 #define LOAD_FILE_NAME															"House.jpg"
 #define SAVE_FILE_NAME															"Bitmap.bmp"
 
+#define BITMAP_BRUSH_FILE_NAME													"Greenstone.bmp"
+
 #define DEFAULT_WIDTH															640
 #define DEFAULT_HEIGHT															480

@@ -34,6 +34,8 @@ public:
 
 	BOOL Paint( HWND hWnd );
 
+	BOOL PlaceBitmap( Bitmap sourceBitmap, int nLeft, int nTop );
+
 	BOOL Save( LPCTSTR lpszFileName );
 
 	BOOL Update( LPARAM lParam, BOOL( *lpUpdateFunction )( HDC hdc, LPARAM lParam ) );

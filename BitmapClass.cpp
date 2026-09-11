@@ -287,6 +287,13 @@ BOOL Bitmap::Paint( HWND hWnd )
 
 } // End of function Bitmap::Paint
 
+BOOL Bitmap::PlaceBitmap( Bitmap sourceBitmap, int nLeft, int nTop )
+{
+	// Place source bitmap
+	return BitBlt( m_hdcMemory, nLeft, nTop, sourceBitmap.m_nWidth, sourceBitmap.m_nHeight, sourceBitmap.m_hdcMemory, 0, 0, SRCCOPY );
+
+} // End of function Bitmap::PlaceBitmap
+
 BOOL Bitmap::Save( LPCTSTR lpszFileName )
 {
 	BOOL bResult = FALSE;

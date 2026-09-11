@@ -4,44 +4,21 @@
 
 // Global variables
 Bitmap g_bitmap;
+Bitmap g_bitmapBrush;
 
-BOOL BitmapUpdateFunction( HDC hdc, LPARAM lParam )
+BOOL BitmapUpdateFunction( HDC, LPARAM lParam )
 {
 	BOOL bResult;
 
-	int nRectangleLeft;
-	int nRectangleTop;
-	int nRectangleRight;
-	int nRectangleBottom;
-	HPEN hPen;
-	HBRUSH hBrush;
-
-	// Create pen
-	hPen = CreatePen( PS_SOLID, 0, RGB( 255, 0, 0 ) );
-
-	// Create brush
-	hBrush = CreateSolidBrush( RGB( 0, 255, 0 ) );
-
-	// Select pen into memory
-	SelectObject( hdc, hPen );
-
-	// Select brush into memory
-	SelectObject( hdc, hBrush );
+	int nMouseX;
+	int nMouseY;
 
 	// Store mouse position
-	nRectangleLeft		= LOWORD( lParam );
-	nRectangleTop		= HIWORD( lParam );
-	nRectangleRight		= ( nRectangleLeft + 100 );
-	nRectangleBottom	= ( nRectangleTop + 100 );
+	nMouseX	= LOWORD( lParam );
+	nMouseY	= HIWORD( lParam );
 
-	// Draw rectangle into memory
-	bResult = Rectangle( hdc, nRectangleLeft, nRectangleTop, nRectangleRight, nRectangleBottom );
-
-	// Delete pen
-	DeleteObject( hPen );
-
-	// Delete brush
-	DeleteObject( hBrush );
+	// Place bitmap brush at mouse position
+	bResult = g_bitmap.PlaceBitmap( g_bitmapBrush, nMouseX, nMouseY );
 
 	return bResult;
 
@@ -67,6 +44,9 @@ LRESULT CALLBACK MainWindowProcedure( HWND hWndMain, UINT uMessage, WPARAM wPara
 				g_bitmap.Create( hWndMain, DEFAULT_WIDTH, DEFAULT_HEIGHT );
 
 			} // End of unable to load bitmap
+
+			// Load bitmap brush
+			g_bitmapBrush.Load( hWndMain, BITMAP_BRUSH_FILE_NAME );
 
 			// Break out of switch
 			break;
